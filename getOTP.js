@@ -1,7 +1,3 @@
-/**
-* Get 2 factor OTP
-*/
-
 var fs=require('fs');
 var SteamTotp = require('steam-totp');
 
