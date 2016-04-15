@@ -101,7 +101,6 @@ function buyingPrice(itemList,buyDB) {
 			return price;
 		}
 		price.metal+=buyDB[itemList[itemIndex].market_hash_name][craftable].metal;
-		console.log("Metal = "+price.metal);
 		if(price.metal%1>=0.99)
 			price.metal=Math.round(price.metal);
 		price.keys+=buyDB[itemList[itemIndex].market_hash_name][craftable].keys;
@@ -151,7 +150,6 @@ function sellingPrice(itemList,sellDB) {
 		}
 		craftable=getCraftStatus(itemList[itemIndex]);
 		paintColor=getPaint(itemList[itemIndex]);
-		console.log("Craft and paint = "+craftable+" "+paintColor);
 		if(!(sellDB.hasOwnProperty(itemList[itemIndex].market_hash_name)&&sellDB[itemList[itemIndex].market_hash_name].hasOwnProperty(craftable)&&sellDB[itemList[itemIndex].market_hash_name][craftable].hasOwnProperty(paintColor))) {
 			console.log("failed");
 			price.metal=-1;
@@ -161,8 +159,6 @@ function sellingPrice(itemList,sellDB) {
 		price.keys+=sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].keys;
 			
 	};
-	
-	console.log("Total selling price is "+price.metal+" metal and "+price.keys+" keys");
 	return price;
 };
 
