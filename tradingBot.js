@@ -72,6 +72,7 @@ community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 
 var buyDB=JSON.parse(fs.readFileSync("database/buy.json"));
 var sellDB=JSON.parse(fs.readFileSync("database/sell.json"));
+var config=JSON.parse(fs.readFileSync("data/config.json"));
 
 // ------------------------------ Trade Events ------------------------------
 
@@ -105,14 +106,14 @@ manager.on('newOffer', function(offer) {
 		
 		//calculate the buying and selling price of items
 		
-		bp=utilities.buyingPrice(offer.itemsToReceive,buyDB);
+		bp=utilities.buyingPrice(offer.itemsToReceive,buyDB,config.keyList);
 		if(bp.metal==-1) {
 			console.log("Buying list contains an invalid item, declining");
 			offer.decline();
 			return;
 		}
 		console.log("the buying price is "+bp.metal+ " metal and " +bp.keys+" Keys");
-		sp=utilities.sellingPrice(offer.itemsToGive,sellDB);
+		sp=utilities.sellingPrice(offer.itemsToGive,sellDB,config.keyList);
 		if(sp.metal==-1) {
 			console.log("Selling list contains an invalid item, declining");
 			offer.decline();

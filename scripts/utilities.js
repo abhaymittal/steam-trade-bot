@@ -71,7 +71,7 @@ function getCraftStatus(item) {
 *	This function returns the buying price of an item. It will not count killstreaks and paints attached.
 *	@return: price of the item, price.metal=-1 if invalid items present
 */
-function buyingPrice(itemList,buyDB) {
+function buyingPrice(itemList,buyDB,keyList) {
 	//initialize the price
 	var price=new Object();
 	price.metal=0;
@@ -89,6 +89,10 @@ function buyingPrice(itemList,buyDB) {
 				price.metal=-1;
 				return price;
 			}
+		}
+		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) {
+			price.keys+=1;
+			continue;
 		}
 		switch(itemList[itemIndex].market_hash_name) {//check if item is metal
 			case "Scrap Metal":
@@ -144,13 +148,17 @@ function getPaint(item) {
 /**
 *	This function returns the selling price of an item. 
 */
-function sellingPrice(itemList,sellDB) {
+function sellingPrice(itemList,sellDB,keyList) {
 	//Initialize price
 	var price=new Object();
 	price.metal=0;
 	price.keys=0;
 	for(var itemIndex in itemList) {
 		//console.log("Item = "+itemList[itemIndex].market_hash_name);
+		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) {
+			price.keys+=1;
+			continue;
+		}
 		switch(itemList[itemIndex].market_hash_name) { //check for metal
 			case "Scrap Metal":
 				price.metal+=0.11;
