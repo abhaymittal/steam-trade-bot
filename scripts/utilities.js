@@ -14,10 +14,11 @@ function isUserBanned(steamid,callback) {
 				console.log("error occured while retrieving data "+err.message);
 				return;
 			}
-			user=body.response.players[steamid];
+			
+			user=body.response.players[steamid]; //get the player object
 			if(user.backpack_tf_banned||user.steamrep_scammer||user.ban_economy||user.ban_community||user.ban_vac) {
 				console.log("User banned: "+steamid);
-				callback(true);
+				callback(true); //player banned
 			}
 			else
 				callback(false);
@@ -27,11 +28,11 @@ function isUserBanned(steamid,callback) {
 
 
 function isWeapon(item) {
-	var itemType=item.getTag('Type');
-	if(!itemType) {
+	var itemType=item.getTag('Type'); //Item type should be one of 5 listed below
+	if(!itemType) { //If type does not exist
 		return false;
 	}
-	if(item.market_hash_name.match(/Slot token/i))
+	if(item.market_hash_name.match(/Slot token/i)) //Item type is in slot tokens as well
 		return false;
 	var weaponType=["Primary weapon", "Secondary weapon", "Melee weapon", "Primary PDA", "Secondary PDA"];
 	if(weaponType.indexOf(itemType.name)!=-1) {
@@ -40,42 +41,56 @@ function isWeapon(item) {
 	return false;
 }
 
-function removeKS(weaponName) {
+
+/**
+*	This function removes killstreak from weapon names
+*/
+function removeKS(weaponName) { 
 	weaponName=weaponName.replace(/(Specialized |Professional |)Killstreak /i,"");
 	return weaponName;
 }
 
 
+/**
+*	This function returns the craft status of any item
+*/
 function getCraftStatus(item) {
-	var craftStatus=item.descriptions.filter(function(obj) {
+	//If item description contains not usable in crafting then item is non-craftable
+	var craftStatus=item.descriptions.filter(function(obj) { 
 		if(obj.value.includes("Not Usable in Crafting"))
 			return true;
 		return false;
 	});
-	if(!craftStatus[0])
+	if(!craftStatus[0]) //It will contain a single item only
 		return "Craftable";
 	return "Non-Craftable";
 }
 
 
-
+/**
+*	This function returns the buying price of an item. It will not count killstreaks and paints attached.
+*	@return: price of the item, price.metal=-1 if invalid items present
+*/
 function buyingPrice(itemList,buyDB) {
+	//initialize the price
 	var price=new Object();
 	price.metal=0;
 	price.keys=0;
+	//traverse over the item list
 	for(var itemIndex in itemList) {
 		if(itemList[itemIndex].appid!=440) {//reject non-tf2 items
 			price.metal=-1;
 			return price;
 		}
-		if(isWeapon(itemList[itemIndex])) {
+		if(isWeapon(itemList[itemIndex])) { 
 			itemName=removeKS(itemList[itemIndex].market_hash_name);
+			//if weapon is not strange, reject
 			if(!(itemName.includes("Strange")||itemName.includes("strange"))) {
 				price.metal=-1;
 				return price;
 			}
 		}
-		switch(itemList[itemIndex].market_hash_name) {
+		switch(itemList[itemIndex].market_hash_name) {//check if item is metal
 			case "Scrap Metal":
 				price.metal+=0.11;
 				if(price.metal%1>=0.99)
@@ -96,19 +111,24 @@ function buyingPrice(itemList,buyDB) {
 				break;
 		}
 		craftable=getCraftStatus(itemList[itemIndex]);
-		if(!(buyDB.hasOwnProperty(itemList[itemIndex].market_hash_name)&&buyDB[itemList[itemIndex].market_hash_name].hasOwnProperty(craftable)))	 {
+		
+		//check if item is present in buyDB
+		if(!(buyDB.hasOwnProperty(itemList[itemIndex].market_hash_name)&&buyDB[itemList[itemIndex].market_hash_name].hasOwnProperty(craftable)))	 { 
 			price.metal=-1; //decline trade if item not present
 			return price;
 		}
+		
 		price.metal+=buyDB[itemList[itemIndex].market_hash_name][craftable].metal;
 		if(price.metal%1>=0.99)
 			price.metal=Math.round(price.metal);
 		price.keys+=buyDB[itemList[itemIndex].market_hash_name][craftable].keys;
 	};
-	console.log("Total price is "+price.metal+" metal and "+price.keys+" keys");
 	return price;
 }
 
+/**
+*	This function returns the paint attached to an item
+*/
 function getPaint(item) {
 	var paint=item.descriptions.filter(function(obj) {
 		if(obj.value.includes("Paint Color"))
@@ -121,37 +141,41 @@ function getPaint(item) {
 }
 
 
-
+/**
+*	This function returns the selling price of an item. 
+*/
 function sellingPrice(itemList,sellDB) {
+	//Initialize price
 	var price=new Object();
 	price.metal=0;
 	price.keys=0;
 	for(var itemIndex in itemList) {
-		console.log("Item = "+itemList[itemIndex].market_hash_name);
-		switch(itemList[itemIndex].market_hash_name) {
+		//console.log("Item = "+itemList[itemIndex].market_hash_name);
+		switch(itemList[itemIndex].market_hash_name) { //check for metal
 			case "Scrap Metal":
 				price.metal+=0.11;
 				if(price.metal%1>=0.99)
 					price.metal=Math.round(price.metal);
-				return;
+				continue;
 				break;
 
 			case "Reclaimed Metal":
 				price.metal+=0.33;
 				if(price.metal%1>=0.99)
 					price.metal=Math.round(price.metal);
-				return;
+				continue;
 				break;
 				
 			case "Refined Metal":
 				price.metal+=1;
-				return;
+				continue;
 				break;
 		}
 		craftable=getCraftStatus(itemList[itemIndex]);
 		paintColor=getPaint(itemList[itemIndex]);
+		//search for item entry in sellDB
 		if(!(sellDB.hasOwnProperty(itemList[itemIndex].market_hash_name)&&sellDB[itemList[itemIndex].market_hash_name].hasOwnProperty(craftable)&&sellDB[itemList[itemIndex].market_hash_name][craftable].hasOwnProperty(paintColor))) {
-			console.log("failed");
+			console.log("Item not found in sellDB");
 			price.metal=-1;
 			return price;
 		}

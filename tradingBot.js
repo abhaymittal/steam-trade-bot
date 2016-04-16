@@ -77,7 +77,7 @@ var sellDB=JSON.parse(fs.readFileSync("database/sell.json"));
 
 manager.on('newOffer', function(offer) {
 	console.log("New offer #" + offer.id + " from " + offer.partner.getSteamID64());
-	utilities.isUserBanned(offer.partner.getSteamID64(),function (result) {
+	utilities.isUserBanned(offer.partner.getSteamID64(),function (result) { //If user is banned, decline trade
 		if(result) { //User banned - decline trade
 			console.log("User banned, declining");
 			offer.decline(function(err) {
@@ -119,7 +119,7 @@ manager.on('newOffer', function(offer) {
 			return;
 		}
 		console.log("the selling price is "+sp.metal+ " metal and " +sp.keys+" Keys");
-		
+		//If bp >= sp, accept the trade
 		if((bp.keys>sp.keys)||((bp.keys==sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100)))) {
 			console.log("Accepting offer");
 			offer.accept(function(err) {
