@@ -83,7 +83,7 @@ function buyingPrice(itemList,buyDB,keyList) {
 			return price;
 		}
 		if(isWeapon(itemList[itemIndex])) { 
-			itemName=removeKS(itemList[itemIndex].market_hash_name);
+			//itemName=removeKS(itemList[itemIndex].market_hash_name);
 			//if weapon is not strange, reject
 			if(!(itemName.includes("Strange")||itemName.includes("strange"))) {
 				price.metal=-1;
@@ -194,8 +194,68 @@ function sellingPrice(itemList,sellDB,keyList) {
 	return price;
 };
 
+
+function updateDB() {
+	var newBuy=null,newSell=null;
+	console.log("Updating DB");
+	if(fs.existsSync("database/newBuy.json")) {
+		console.log("New buy entry found");
+		newBuy=JSON.parse(fs.readFileSync("database/newBuy.json"));
+	}
+	if(fs.existsSync("database/newSell.json")) {
+		console.log("New sell entry found");
+		newSell=JSON.parse(fs.readFileSync("database/newSell.json"));
+	}
+	for(var prop in newBuy) {
+		console.log("prop = "+prop);
+		buyDB[prop]=newBuy[prop];
+	}
+	for(var prop in newSell) {
+		sellDB[prop]=newSell[prop];
+	}
+	if(fs.existsSync("database/newBuy.json")) {
+		fs.unlinkSync("database/newBuy.json");
+	}
+	if(fs.existsSync("database/newSell.json")) {
+		fs.unlinkSync("database/newSell.json");
+	}
+
+	fs.writeFile("database/buy.json",JSON.stringify(buyDB));
+	fs.writeFile("database/sell.json",JSON.stringify(sellDB));
+	console.log("Update done");
+}
+
+function decrementBuyStock(itemsList,buyDB,keyList) {
+	for(var itemIndex in itemList) {
+		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) { //skip keys
+			continue;
+		}
+		if(itemList[itemIndex].market_hash_name.includes("Metal"))//skip metal
+			continue;
+		craftable=getCraftStatus(itemList[itemIndex]);
+		buyDB[itemList[itemIndex].market_hash_name][craftable].qty-=1;
+	};
+}
+
+function decrementSellStock(itemsList,sellDB,keyList) {
+	for(var itemIndex in itemList) {
+		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) { //skip keys
+			continue;
+		}
+		if(itemList[itemIndex].market_hash_name.includes("Metal"))//skip metal
+			continue;
+		craftable=getCraftStatus(itemList[itemIndex]);
+		paintColor=getPaint(itemList[itemIndex]);
+		sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty-=1;
+	};
+}
+
+
 module.exports = {
 	isUserBanned,
 	buyingPrice,
-	sellingPrice
+	sellingPrice,
+	updateDB,
+	decrementBuyStock,
+	decrementSellStock
 };

@@ -72,36 +72,6 @@ var config=JSON.parse(fs.readFileSync("data/config.json"));
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 
-function updateDB() {
-	var newBuy=null,newSell=null;
-	console.log("Updating DB");
-	if(fs.existsSync("database/newBuy.json")) {
-		console.log("New buy entry found");
-		newBuy=JSON.parse(fs.readFileSync("database/newBuy.json"));
-	}
-	if(fs.existsSync("database/newSell.json")) {
-		console.log("New sell entry found");
-		newSell=JSON.parse(fs.readFileSync("database/newSell.json"));
-	}
-	for(var prop in newBuy) {
-		console.log("prop = "+prop);
-		buyDB[prop]=newBuy[prop];
-	}
-	for(var prop in newSell) {
-		sellDB[prop]=newSell[prop];
-	}
-	if(fs.existsSync("database/newBuy.json")) {
-		fs.unlinkSync("database/newBuy.json");
-	}
-	if(fs.existsSync("database/newSell.json")) {
-		fs.unlinkSync("database/newSell.json");
-	}
-
-	fs.writeFile("database/buy.json",JSON.stringify(buyDB));
-	fs.writeFile("database/sell.json",JSON.stringify(sellDB));
-	console.log("Update done");
-}
-
 setInterval(updateDB(),1000*60*60); //update DB every hour
 
 // ------------------------------ Trade Events ------------------------------
@@ -160,6 +130,8 @@ manager.on('newOffer', function(offer) {
 					community.checkConfirmations();
 					console.log("Offer accepted");
 					//decrease number of item in buy and sell list
+					utilities.decrementBuyStock(offer.itemsToReceive,buyDB,config.keyList);
+					utilities.decrementSellStock(offer.itemsToGive,sellDB,config.keyList);
 				}
 			});
 		}
