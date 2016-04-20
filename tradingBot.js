@@ -18,14 +18,10 @@ var manager = new TradeOfferManager({
 	"language": "en", // english descriptions
 	"pollInterval": 5000 //5 second poll
 });
-var secrets;
-if(fs.existsSync("data\\***REMOVED***.2fa")) {
-	secrets=JSON.parse(fs.readFileSync("data\\***REMOVED***.2fa"));
-}
-else {
-	console.log("2FA file missing, exiting");
-	process.exit(1);
-}
+var secrets = {
+	"shared_secret":"***REMOVED***",
+	"identity_secret":"***REMOVED***"
+};
 
 //setup the logon options
 var logOnOptions = {
@@ -73,6 +69,40 @@ community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 var buyDB=JSON.parse(fs.readFileSync("database/buy.json"));
 var sellDB=JSON.parse(fs.readFileSync("database/sell.json"));
 var config=JSON.parse(fs.readFileSync("data/config.json"));
+
+// ------------------------------ Store Updated DB and add new entries ------------------------------
+
+function updateDB() {
+	var newBuy=null,newSell=null;
+	console.log("Updating DB");
+	if(fs.existsSync("database/newBuy.json")) {
+		console.log("New buy entry found");
+		newBuy=JSON.parse(fs.readFileSync("database/newBuy.json"));
+	}
+	if(fs.existsSync("database/newSell.json")) {
+		console.log("New sell entry found");
+		newSell=JSON.parse(fs.readFileSync("database/newSell.json"));
+	}
+	for(var prop in newBuy) {
+		console.log("prop = "+prop);
+		buyDB[prop]=newBuy[prop];
+	}
+	for(var prop in newSell) {
+		sellDB[prop]=newSell[prop];
+	}
+	if(fs.existsSync("database/newBuy.json")) {
+		fs.unlinkSync("database/newBuy.json");
+	}
+	if(fs.existsSync("database/newSell.json")) {
+		fs.unlinkSync("database/newSell.json");
+	}
+
+	fs.writeFile("database/buy.json",JSON.stringify(buyDB));
+	fs.writeFile("database/sell.json",JSON.stringify(sellDB));
+	console.log("Update done");
+}
+
+setInterval(updateDB(),1000*60*60); //update DB every hour
 
 // ------------------------------ Trade Events ------------------------------
 
@@ -129,6 +159,7 @@ manager.on('newOffer', function(offer) {
 				else {
 					community.checkConfirmations();
 					console.log("Offer accepted");
+					//decrease number of item in buy and sell list
 				}
 			});
 		}
