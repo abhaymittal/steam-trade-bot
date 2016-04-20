@@ -73,13 +73,13 @@ var config=JSON.parse(fs.readFileSync("data/config.json"));
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 
-setInterval(updateDB(),1000*60*60); //update DB every hour
+setInterval(utilities.updateDB(buyDB,sellDB,logger),1000*60*60); //update DB every hour
 
 // ------------------------------ Trade Events ------------------------------
 
 manager.on('newOffer', function(offer) {
 	logger.trade("New offer #" + offer.id + " from " + offer.partner.getSteamID64());
-	utilities.isUserBanned(offer.partner.getSteamID64(),function (result) { //If user is banned, decline trade
+	utilities.isUserBanned(offer.partner.getSteamID64(),logger,function (result) { //If user is banned, decline trade
 		if(result) { //User banned - decline trade
 			logger.info("User banned, declining");
 			offer.decline(function(err) {
@@ -107,14 +107,14 @@ manager.on('newOffer', function(offer) {
 		
 		//calculate the buying and selling price of items
 		
-		bp=utilities.buyingPrice(offer.itemsToReceive,buyDB,config.keyList);
+		bp=utilities.buyingPrice(offer.itemsToReceive,buyDB,config.keyList,logger);
 		if(bp.metal==-1) {
 			logger.info("Buying list contains an invalid item, declining");
 			offer.decline();
 			return;
 		}
 		logger.info("the buying price is "+bp.metal+ " metal and " +bp.keys+" Keys");
-		sp=utilities.sellingPrice(offer.itemsToGive,sellDB,config.keyList);
+		sp=utilities.sellingPrice(offer.itemsToGive,sellDB,config.keyList,logger);
 		if(sp.metal==-1) {
 			logger.info("Selling list contains an invalid item, declining");
 			offer.decline();

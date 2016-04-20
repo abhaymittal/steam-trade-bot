@@ -1,6 +1,6 @@
 var request=require('../node_modules/request');
-var logger=require('./log');
-function isUserBanned(steamid,callback) {
+var fs=require('fs');
+function isUserBanned(steamid,logger,callback) {
 	request.get(
 		{
 			"uri":"http://backpack.tf/api/IGetUsers/v3/",
@@ -72,7 +72,7 @@ function getCraftStatus(item) {
 *	This function returns the buying price of an item. It will not count killstreaks and paints attached.
 *	@return: price of the item, price.metal=-1 if invalid items present
 */
-function buyingPrice(itemList,buyDB,keyList) {
+function buyingPrice(itemList,buyDB,keyList,logger) {
 	//initialize the price
 	var price=new Object();
 	price.metal=0;
@@ -149,7 +149,7 @@ function getPaint(item) {
 /**
 *	This function returns the selling price of an item. 
 */
-function sellingPrice(itemList,sellDB,keyList) {
+function sellingPrice(itemList,sellDB,keyList,logger) {
 	//Initialize price
 	var price=new Object();
 	price.metal=0;
@@ -195,8 +195,9 @@ function sellingPrice(itemList,sellDB,keyList) {
 };
 
 
-function updateDB() {
-	var newBuy=null,newSell=null;
+function updateDB(buyDB,sellDB,logger) {
+	var newBuy=null;
+	var newSell=null;
 	logger.info("Updating DB");
 	if(fs.existsSync("database/newBuy.json")) {
 		logger.info("New buy entry found");
@@ -224,7 +225,7 @@ function updateDB() {
 	logger.info
 }
 
-function decrementBuyStock(itemsList,buyDB,keyList) {
+function decrementBuyStock(itemList,buyDB,keyList) {
 	for(var itemIndex in itemList) {
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) { //skip keys
 			continue;
@@ -236,7 +237,7 @@ function decrementBuyStock(itemsList,buyDB,keyList) {
 	};
 }
 
-function decrementSellStock(itemsList,sellDB,keyList) {
+function decrementSellStock(itemList,sellDB,keyList) {
 	for(var itemIndex in itemList) {
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) { //skip keys
 			continue;

@@ -30,14 +30,14 @@ var logger = new Winston.Logger({
 				name: 'log',
                 level: 'info', 
                 timestamp: true, 
-                filename: '../logs/bot.log', 
+                filename: 'logs/bot.log', 
                 json: false
             }),
 			new (Winston.transports.File)({
 				name: 'tradeLog',
                 level: 'trade', 
                 timestamp: true, 
-                filename: '../logs/trade.log', 
+                filename: 'logs/trade.log', 
                 json: false
             })
         ]
