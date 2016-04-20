@@ -9,6 +9,7 @@ var TradeOfferManager = require('steam-tradeoffer-manager');
 var fs=require('fs');
 var community=new SteamCommunity();	
 var utilities=require('./scripts/utilities');
+var logger=require('./scripts/log');
 
 
 
@@ -43,22 +44,22 @@ if (fs.existsSync('polldata.json')) {
 //login to the steamcommunity
 community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 	if(err) {
-		console.log("error occured "+err.message);
+		logger.error("error occured "+err.message);
 		process.exit(1);
 	}
 	fs.writeFile('steamguard.txt', steamguard); 
 
-	console.log("Logged into Steam");
+	logger.info("Logged into Steam");
 	
 	//use steamcommunity cookies for tradeoffer-manager
 	manager.setCookies(cookies, function(err) {
 		if (err) {
-			console.log(err);
+			logger.error(err);
 			process.exit(1); 
 			return;
 		}
 
-		console.log("Got API key: " + manager.apiKey);
+		logger.info("Got API key: " + manager.apiKey);
 	});
 	
 	community.startConfirmationChecker(10000,secrets.identity_secret); //poll every 10 seconds and confirm
@@ -77,13 +78,13 @@ setInterval(updateDB(),1000*60*60); //update DB every hour
 // ------------------------------ Trade Events ------------------------------
 
 manager.on('newOffer', function(offer) {
-	console.log("New offer #" + offer.id + " from " + offer.partner.getSteamID64());
+	logger.trade("New offer #" + offer.id + " from " + offer.partner.getSteamID64());
 	utilities.isUserBanned(offer.partner.getSteamID64(),function (result) { //If user is banned, decline trade
 		if(result) { //User banned - decline trade
-			console.log("User banned, declining");
+			logger.info("User banned, declining");
 			offer.decline(function(err) {
 				if(err)
-					console.log("Error occured while declining");
+					logger.error("Error occured while declining");
 			});
 			return;
 		}
@@ -93,13 +94,13 @@ manager.on('newOffer', function(offer) {
 		//decline gift offers and offers which only take items
 		if((offer.itemsToGive==null)||(offer.itemsToReceive==null)) {
 			if(offer.itemsToGive==null)
-				console.log("Empty selling list");
+				logger.info("Empty selling list");
 			if(offer.itemsToReceive==null)
-				console.log("Empty buying list");
-			console.log("Declining trade as empty list");
+				logger.info("Empty buying list");
+			logger.info("Declining trade as empty list");
 			offer.decline(function(err) {
 				if(err)
-					console.log("Error occured while declining");
+					logger.error("Error occured while declining");
 			});
 			return;
 		}
@@ -108,27 +109,27 @@ manager.on('newOffer', function(offer) {
 		
 		bp=utilities.buyingPrice(offer.itemsToReceive,buyDB,config.keyList);
 		if(bp.metal==-1) {
-			console.log("Buying list contains an invalid item, declining");
+			logger.info("Buying list contains an invalid item, declining");
 			offer.decline();
 			return;
 		}
-		console.log("the buying price is "+bp.metal+ " metal and " +bp.keys+" Keys");
+		logger.info("the buying price is "+bp.metal+ " metal and " +bp.keys+" Keys");
 		sp=utilities.sellingPrice(offer.itemsToGive,sellDB,config.keyList);
 		if(sp.metal==-1) {
-			console.log("Selling list contains an invalid item, declining");
+			logger.info("Selling list contains an invalid item, declining");
 			offer.decline();
 			return;
 		}
-		console.log("the selling price is "+sp.metal+ " metal and " +sp.keys+" Keys");
+		logger.info("the selling price is "+sp.metal+ " metal and " +sp.keys+" Keys");
 		//If bp >= sp, accept the trade
 		if((bp.keys>sp.keys)||((bp.keys==sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100)))) {
-			console.log("Accepting offer");
+			logger.info("Accepting offer");
 			offer.accept(function(err) {
 				if(err)
-					console.log("error occured while confirming");
+					logger.error("error occured while confirming");
 				else {
 					community.checkConfirmations();
-					console.log("Offer accepted");
+					logger.info("Offer accepted");
 					//decrease number of item in buy and sell list
 					utilities.decrementBuyStock(offer.itemsToReceive,buyDB,config.keyList);
 					utilities.decrementSellStock(offer.itemsToGive,sellDB,config.keyList);
@@ -136,7 +137,7 @@ manager.on('newOffer', function(offer) {
 			});
 		}
 		else {
-			console.log("Declining as price offered is less");
+			logger.info("Declining as price offered is less");
 			offer.decline();
 		}
 		
@@ -144,18 +145,18 @@ manager.on('newOffer', function(offer) {
 });
 
 manager.on('receivedOfferChanged', function(offer, oldState) {
-	console.log("Offer #" + offer.id + " changed: " + TradeOfferManager.getStateName(oldState) + " -> " + TradeOfferManager.getStateName(offer.state));
+	logger.trade("Offer #" + offer.id + " changed: " + TradeOfferManager.getStateName(oldState) + " -> " + TradeOfferManager.getStateName(offer.state));
 
 	if (offer.state == TradeOfferManager.ETradeOfferState.Accepted) {
 		offer.getReceivedItems(function(err, items) {
 			if (err) {
-				console.log("Couldn't get received items: " + err);
+				logger.error("Couldn't get received items: " + err);
 			} else {
 				var names = items.map(function(item) {
 					return item.name;
 				});
 
-				console.log("Received: " + names.join(', '));
+				logger.info("Received: " + names.join(', '));
 			}
 		});
 	}

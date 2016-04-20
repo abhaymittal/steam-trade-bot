@@ -1,4 +1,5 @@
 var request=require('../node_modules/request');
+var logger=require('./log');
 function isUserBanned(steamid,callback) {
 	request.get(
 		{
@@ -11,13 +12,13 @@ function isUserBanned(steamid,callback) {
 		},
 		function(err,response,body) {
 			if(err) {
-				console.log("error occured while retrieving data "+err.message);
+				logger.error("error occured while retrieving data "+err.message);
 				return;
 			}
 			
 			user=body.response.players[steamid]; //get the player object
 			if(user.backpack_tf_banned||user.steamrep_scammer||user.ban_economy||user.ban_community||user.ban_vac) {
-				console.log("User banned: "+steamid);
+				logger.info("User banned: "+steamid);
 				callback(true); //player banned
 			}
 			else
@@ -183,8 +184,7 @@ function sellingPrice(itemList,sellDB,keyList) {
 		paintColor=getPaint(itemList[itemIndex]);
 		//search for item entry in sellDB
 		if(!(sellDB.hasOwnProperty(itemList[itemIndex].market_hash_name)&&sellDB[itemList[itemIndex].market_hash_name].hasOwnProperty(craftable)&&sellDB[itemList[itemIndex].market_hash_name][craftable].hasOwnProperty(paintColor))) {
-			console.log("Item not found in sellDB");
-			price.metal=-1;
+			price.metal=-1; //decline trade as item not present in database
 			return price;
 		}
 		price.metal+=sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].metal;
@@ -197,17 +197,16 @@ function sellingPrice(itemList,sellDB,keyList) {
 
 function updateDB() {
 	var newBuy=null,newSell=null;
-	console.log("Updating DB");
+	logger.info("Updating DB");
 	if(fs.existsSync("database/newBuy.json")) {
-		console.log("New buy entry found");
+		logger.info("New buy entry found");
 		newBuy=JSON.parse(fs.readFileSync("database/newBuy.json"));
 	}
 	if(fs.existsSync("database/newSell.json")) {
-		console.log("New sell entry found");
+		logger.info("New sell entry found");
 		newSell=JSON.parse(fs.readFileSync("database/newSell.json"));
 	}
 	for(var prop in newBuy) {
-		console.log("prop = "+prop);
 		buyDB[prop]=newBuy[prop];
 	}
 	for(var prop in newSell) {
@@ -222,7 +221,7 @@ function updateDB() {
 
 	fs.writeFile("database/buy.json",JSON.stringify(buyDB));
 	fs.writeFile("database/sell.json",JSON.stringify(sellDB));
-	console.log("Update done");
+	logger.info
 }
 
 function decrementBuyStock(itemsList,buyDB,keyList) {
