@@ -80,6 +80,8 @@ function addPrice(price1,price2) {
 	d2=Math.round(price2.metal*100)%10;
 	if(d1+d2>=10)
 		price.metal+=0.01;
+	if((price.metal%1)>=0.98)
+		price.metal=Math.round(price.metal);
 	return price;
 }
 
