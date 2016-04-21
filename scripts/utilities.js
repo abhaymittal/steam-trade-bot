@@ -69,6 +69,22 @@ function getCraftStatus(item) {
 
 
 /**
+*	Function to add two price objects
+*	@return the sum of price1 and price2
+*/
+function addPrice(price1,price2) {
+	var price=new Object();
+	price.keys=price1.keys+price2.keys;
+	price.metal=(Math.round(price1.metal*100)+Math.round(price2.metal*100))/100.0;
+	d1=Math.round(price1.metal*100)%10;
+	d2=Math.round(price2.metal*100)%10;
+	if(d1+d2>=10)
+		price.metal+=0.01;
+	return price;
+}
+
+
+/**
 *	This function returns the buying price of an item. It will not count killstreaks and paints attached.
 *	@return: price of the item, price.metal=-1 if invalid items present
 */
@@ -92,26 +108,22 @@ function buyingPrice(itemList,buyDB,keyList,logger) {
 			}
 		}
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) {
-			price.keys+=1;
+			price=addPrice(price,{keys:1,metal:0});
 			continue;
 		}
 		switch(itemList[itemIndex].market_hash_name) {//check if item is metal
 			case "Scrap Metal":
-				price.metal+=0.11;
-				if(price.metal%1>=0.99)
-					price.metal=Math.round(price.metal);
+				price=addPrice(price,{keys:0,metal:0.11});
 				continue;
 				break;
 
 			case "Reclaimed Metal":
-				price.metal+=0.33;
-				if(price.metal%1>=0.99)
-					price.metal=Math.round(price.metal);
+				price=addPrice(price,{keys:0,metal:0.33});
 				continue;
 				break;
 				
 			case "Refined Metal":
-				price.metal+=1;
+				price=addPrice(price,{keys:0,metal:1});
 				continue;
 				break;
 		}
@@ -122,11 +134,7 @@ function buyingPrice(itemList,buyDB,keyList,logger) {
 			price.metal=-1; //decline trade if item not present
 			return price;
 		}
-		
-		price.metal+=buyDB[itemList[itemIndex].market_hash_name][craftable].metal;
-		if(price.metal%1>=0.99)
-			price.metal=Math.round(price.metal);
-		price.keys+=buyDB[itemList[itemIndex].market_hash_name][craftable].keys;
+		price=addPrice(price,buyDB[itemList[itemIndex].market_hash_name][craftable]);
 	};
 	return price;
 }
@@ -157,26 +165,22 @@ function sellingPrice(itemList,sellDB,keyList,logger) {
 	for(var itemIndex in itemList) {
 		//console.log("Item = "+itemList[itemIndex].market_hash_name);
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) {
-			price.keys+=1;
+			price=addPrice(price,{keys:1,metal:0});
 			continue;
 		}
 		switch(itemList[itemIndex].market_hash_name) { //check for metal
 			case "Scrap Metal":
-				price.metal+=0.11;
-				if(price.metal%1>=0.99)
-					price.metal=Math.round(price.metal);
+				price=addPrice(price,{keys:0,metal:0.11});
 				continue;
 				break;
 
 			case "Reclaimed Metal":
-				price.metal+=0.33;
-				if(price.metal%1>=0.99)
-					price.metal=Math.round(price.metal);
+				price=addPrice(price,{keys:0,metal:0.33});
 				continue;
 				break;
 				
 			case "Refined Metal":
-				price.metal+=1;
+				price=addPrice(price,{keys:0,metal:1});
 				continue;
 				break;
 		}
@@ -187,8 +191,7 @@ function sellingPrice(itemList,sellDB,keyList,logger) {
 			price.metal=-1; //decline trade as item not present in database
 			return price;
 		}
-		price.metal+=sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].metal;
-		price.keys+=sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].keys;
+		price=addPrice(price,sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor]);
 			
 	};
 	return price;
@@ -234,6 +237,8 @@ function decrementBuyStock(itemList,buyDB,keyList) {
 			continue;
 		craftable=getCraftStatus(itemList[itemIndex]);
 		buyDB[itemList[itemIndex].market_hash_name][craftable].qty-=1;
+		if(buyDB[itemList[itemIndex].market_hash_name][craftable].qty==0)
+			delete buyDB[itemList[itemIndex].market_hash_name][craftable];
 	};
 }
 
@@ -247,6 +252,8 @@ function decrementSellStock(itemList,sellDB,keyList) {
 		craftable=getCraftStatus(itemList[itemIndex]);
 		paintColor=getPaint(itemList[itemIndex]);
 		sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty-=1;
+		if(sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty==0)
+			delete sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor];
 	};
 }
 
