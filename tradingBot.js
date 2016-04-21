@@ -2,7 +2,11 @@
 *Basic trading bot
 *@author: Abhay Mittal
 */
-
+/**
+*	TODO
+*	Check ESCROW
+*	
+*/
 var SteamCommunity=require('steamcommunity');
 var SteamTotp = require('steam-totp');
 var TradeOfferManager = require('steam-tradeoffer-manager');
@@ -72,8 +76,8 @@ var sellDB=JSON.parse(fs.readFileSync("database/sell.json"));
 var config=JSON.parse(fs.readFileSync("data/config.json"));
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
-
-setInterval(utilities.updateDB(buyDB,sellDB,logger),1000*60*60); //update DB every hour
+utilities.updateDB(buyDB,sellDB,logger);
+setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*5); //update DB every hour
 
 // ------------------------------ Trade Events ------------------------------
 
