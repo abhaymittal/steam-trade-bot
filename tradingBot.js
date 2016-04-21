@@ -4,7 +4,7 @@
 */
 /**
 *	TODO
-*	Check ESCROW
+*	What if user sells more copies of item than required
 *	
 */
 var SteamCommunity=require('steamcommunity');
@@ -92,59 +92,65 @@ manager.on('newOffer', function(offer) {
 			});
 			return;
 		}
-		
-		//Continue with trade
-		
-		//decline gift offers and offers which only take items
-		if((offer.itemsToGive==null)||(offer.itemsToReceive==null)) {
-			if(offer.itemsToGive==null)
-				logger.info("Empty selling list");
-			if(offer.itemsToReceive==null)
-				logger.info("Empty buying list");
-			logger.info("Declining trade as empty list");
-			offer.decline(function(err) {
-				if(err)
-					logger.error("Error occured while declining");
-			});
-			return;
-		}
-		
-		//calculate the buying and selling price of items
-		
-		bp=utilities.buyingPrice(offer.itemsToReceive,buyDB,config.keyList,logger);
-		if(bp.metal==-1) {
-			logger.info("Buying list contains an invalid item, declining");
-			offer.decline();
-			return;
-		}
-		logger.info("the buying price is "+bp.metal+ " metal and " +bp.keys+" Keys");
-		sp=utilities.sellingPrice(offer.itemsToGive,sellDB,config.keyList,logger);
-		if(sp.metal==-1) {
-			logger.info("Selling list contains an invalid item, declining");
-			offer.decline();
-			return;
-		}
-		logger.info("the selling price is "+sp.metal+ " metal and " +sp.keys+" Keys");
-		//If bp >= sp, accept the trade
-		if((bp.keys>sp.keys)||((bp.keys==sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100)))) {
-			logger.info("Accepting offer");
-			offer.accept(function(err) {
-				if(err)
-					logger.error("error occured while confirming");
-				else {
-					community.checkConfirmations();
-					logger.info("Offer accepted");
-					//decrease number of item in buy and sell list
-					utilities.decrementBuyStock(offer.itemsToReceive,buyDB,config.keyList);
-					utilities.decrementSellStock(offer.itemsToGive,sellDB,config.keyList);
-				}
-			});
-		}
-		else {
-			logger.info("Declining as price offered is less");
-			offer.decline();
-		}
-		
+		//Reject if trade will incur escrow hold
+		utilities.isEscrowHeld(offer,logger,function(result) {
+			if(result) {
+				logger.info("Declining trade due to escrow hold");
+				offer.decline();
+				return;
+			}
+			//Continue with trade
+			
+			//decline gift offers and offers which only take items
+			if((offer.itemsToGive==null)||(offer.itemsToReceive==null)) {
+				if(offer.itemsToGive==null)
+					logger.info("Empty selling list");
+				if(offer.itemsToReceive==null)
+					logger.info("Empty buying list");
+				logger.info("Declining trade as empty list");
+				offer.decline(function(err) {
+					if(err)
+						logger.error("Error occured while declining");
+				});
+				return;
+			}
+			
+			//calculate the buying and selling price of items
+			
+			bp=utilities.buyingPrice(offer.itemsToReceive,buyDB,config.keyList,logger);
+			if(bp.metal==-1) {
+				logger.info("Buying list contains an invalid item, declining");
+				offer.decline();
+				return;
+			}
+			logger.info("The price of items to receive: "+bp.metal+ " metal and " +bp.keys+" Keys");
+			sp=utilities.sellingPrice(offer.itemsToGive,sellDB,config.keyList,logger);
+			if(sp.metal==-1) {
+				logger.info("Selling list contains an invalid item, declining");
+				offer.decline();
+				return;
+			}
+			logger.info("The price of items to sell: "+sp.metal+ " metal and " +sp.keys+" Keys");
+			//If bp >= sp, accept the trade
+			if((bp.keys>sp.keys)||((bp.keys==sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100)))) {
+				logger.info("Accepting offer");
+				offer.accept(function(err) {
+					if(err)
+						logger.error("error occured while confirming");
+					else {
+						community.checkConfirmations();
+						logger.info("Offer accepted");
+						//decrease number of item in buy and sell list
+						utilities.decrementBuyStock(offer.itemsToReceive,buyDB,config.keyList);
+						utilities.decrementSellStock(offer.itemsToGive,sellDB,config.keyList);
+					}
+				});
+			}
+			else {
+				logger.info("Declining as price offered is less");
+				offer.decline();
+			}
+		});
 	});
 });
 
