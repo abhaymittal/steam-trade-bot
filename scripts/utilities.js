@@ -101,14 +101,14 @@ function buyingPrice(itemList,buyDB,keyList,logger) {
 			price.metal=-1;
 			return price;
 		}
-		if(isWeapon(itemList[itemIndex])) { 
+		/*if(isWeapon(itemList[itemIndex])) { 
 			//itemName=removeKS(itemList[itemIndex].market_hash_name);
 			//if weapon is not strange, reject
 			if(!(itemName.includes("Strange")||itemName.includes("strange"))) {
 				price.metal=-1;
 				return price;
 			}
-		}
+		}*/
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) {
 			price=addPrice(price,{keys:1,metal:0});
 			continue;
@@ -230,6 +230,10 @@ function updateDB(buyDB,sellDB,logger) {
 	logger.info
 }
 
+/**
+*	Function to decrement the quantity of item from buyDB
+*	
+*/
 function decrementBuyStock(itemList,buyDB,keyList) {
 	for(var itemIndex in itemList) {
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) { //skip keys
@@ -239,8 +243,12 @@ function decrementBuyStock(itemList,buyDB,keyList) {
 			continue;
 		craftable=getCraftStatus(itemList[itemIndex]);
 		buyDB[itemList[itemIndex].market_hash_name][craftable].qty-=1;
-		if(buyDB[itemList[itemIndex].market_hash_name][craftable].qty==0)
+		if(buyDB[itemList[itemIndex].market_hash_name][craftable].qty==0) {
 			delete buyDB[itemList[itemIndex].market_hash_name][craftable];
+			obj=buyDB[itemList[itemIndex].market_hash_name];//check if the parent becomes empty, if so, delete it
+			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({}))
+				delete obj;
+		}
 	};
 }
 
@@ -254,11 +262,38 @@ function decrementSellStock(itemList,sellDB,keyList) {
 		craftable=getCraftStatus(itemList[itemIndex]);
 		paintColor=getPaint(itemList[itemIndex]);
 		sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty-=1;
-		if(sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty==0)
+		if(sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty==0) { 
 			delete sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor];
+			obj=sellDB[itemList[itemIndex].market_hash_name][craftable];
+			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({}))//check if parent empty
+				delete obj;
+			obj=sellDB[itemList[itemIndex].market_hash_name];
+			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({}))//check if grandparent empty
+				delete obj;
+			
+		}
 	};
 }
 
+/**
+*	function to check if a trade will incur escrow hold
+*	@return true if hold will occur, else false
+*/
+function isEscrowHeld(offer,logger,callback) {
+	offer.getEscrowDuration(function (err, daysTheirEscrow, daysMyEscrow) {
+		if(err) {
+			logger.error("Error while checking escrow duration for "+offer.id+": "+err.message);
+			callback(true);
+			return;
+		}
+		if(offer.itemsToReceive.length>0&&daysTheirEscrow>0) {
+			logger.warn("Offer "+offer+" will incur escrow hold");
+			callback(true);
+			return;
+		}
+		callback(false)
+	} );
+}
 
 module.exports = {
 	isUserBanned,
@@ -266,5 +301,6 @@ module.exports = {
 	sellingPrice,
 	updateDB,
 	decrementBuyStock,
-	decrementSellStock
+	decrementSellStock,
+	isEscrowHeld
 };
