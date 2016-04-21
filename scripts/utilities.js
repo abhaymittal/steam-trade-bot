@@ -246,12 +246,16 @@ function decrementBuyStock(itemList,buyDB,keyList) {
 		if(buyDB[itemList[itemIndex].market_hash_name][craftable].qty==0) {
 			delete buyDB[itemList[itemIndex].market_hash_name][craftable];
 			obj=buyDB[itemList[itemIndex].market_hash_name];//check if the parent becomes empty, if so, delete it
-			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({}))
-				delete obj;
+			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({})))
+				delete buyDB[itemList[itemIndex].market_hash_name];
 		}
 	};
 }
 
+/**
+*	Function to decrement the quantity of item from sellDB
+*	
+*/
 function decrementSellStock(itemList,sellDB,keyList) {
 	for(var itemIndex in itemList) {
 		if(keyList.indexOf(itemList[itemIndex].market_hash_name)!=-1) { //skip keys
@@ -265,11 +269,11 @@ function decrementSellStock(itemList,sellDB,keyList) {
 		if(sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor].qty==0) { 
 			delete sellDB[itemList[itemIndex].market_hash_name][craftable][paintColor];
 			obj=sellDB[itemList[itemIndex].market_hash_name][craftable];
-			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({}))//check if parent empty
-				delete obj;
+			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({})))//check if parent empty
+				delete sellDB[itemList[itemIndex].market_hash_name][craftable];
 			obj=sellDB[itemList[itemIndex].market_hash_name];
-			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({}))//check if grandparent empty
-				delete obj;
+			if((Object.keys(obj).length===0)&&(JSON.stringify(obj)===JSON.stringify({})))//check if grandparent empty
+				delete sellDB[itemList[itemIndex].market_hash_name];
 			
 		}
 	};
