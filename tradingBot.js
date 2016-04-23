@@ -41,7 +41,7 @@ if (fs.existsSync('steamguard.txt')) {
 }
 
 //read polldata to prevent old offers from triggering event again
-if (fs.existsSync('polldata.json')) {
+if (fs.existsSync('data/polldata.json')) {
 	manager.pollData = JSON.parse(fs.readFileSync('polldata.json'));
 }
 
@@ -173,5 +173,5 @@ manager.on('receivedOfferChanged', function(offer, oldState) {
 });
 
 manager.on('pollData', function(pollData) {
-	fs.writeFile('polldata.json', JSON.stringify(pollData));
+	fs.writeFile('data/polldata.json', JSON.stringify(pollData));
 });
