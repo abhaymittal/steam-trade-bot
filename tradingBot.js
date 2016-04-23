@@ -73,7 +73,7 @@ community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 
 var buyDB=JSON.parse(fs.readFileSync("database/buy.json"));
 var sellDB=JSON.parse(fs.readFileSync("database/sell.json"));
-var config=JSON.parse(fs.readFileSync("data/config.json"));
+var config=JSON.parse(fs.readFileSync("config.json"));
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 utilities.updateDB(buyDB,sellDB,logger);
