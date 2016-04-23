@@ -1,5 +1,8 @@
 var request=require('../node_modules/request');
 var fs=require('fs');
+
+var homeDir=process.env.OPENSHIFT_DATA_DIR ? process.env.OPENSHIFT_DATA_DIR+"/":"";
+
 function isUserBanned(steamid,logger,callback) {
 	request.get(
 		{
@@ -204,13 +207,13 @@ function updateDB(buyDB,sellDB,logger) {
 	var newBuy=null;
 	var newSell=null;
 	logger.info("Updating DB");
-	if(fs.existsSync("database/newBuy.json")) {
+	if(fs.existsSync(homeDir+"database/newBuy.json")) {
 		logger.info("New buy entry found");
-		newBuy=JSON.parse(fs.readFileSync("database/newBuy.json"));
+		newBuy=JSON.parse(fs.readFileSync(homeDir+"database/newBuy.json"));
 	}
 	if(fs.existsSync("database/newSell.json")) {
 		logger.info("New sell entry found");
-		newSell=JSON.parse(fs.readFileSync("database/newSell.json"));
+		newSell=JSON.parse(fs.readFileSync(homeDir+"database/newSell.json"));
 	}
 	for(var prop in newBuy) {
 		buyDB[prop]=newBuy[prop];
@@ -218,15 +221,15 @@ function updateDB(buyDB,sellDB,logger) {
 	for(var prop in newSell) {
 		sellDB[prop]=newSell[prop];
 	}
-	if(fs.existsSync("database/newBuy.json")) {
-		fs.unlinkSync("database/newBuy.json");
+	if(fs.existsSync(homeDir+"database/newBuy.json")) {
+		fs.unlinkSync(homeDir+"database/newBuy.json");
 	}
-	if(fs.existsSync("database/newSell.json")) {
-		fs.unlinkSync("database/newSell.json");
+	if(fs.existsSync(homeDir+"database/newSell.json")) {
+		fs.unlinkSync(homeDir+"database/newSell.json");
 	}
 
-	fs.writeFile("database/buy.json",JSON.stringify(buyDB));
-	fs.writeFile("database/sell.json",JSON.stringify(sellDB));
+	fs.writeFile(homeDir+"database/buy.json",JSON.stringify(buyDB));
+	fs.writeFile(homeDir+"database/sell.json",JSON.stringify(sellDB));
 	logger.info
 }
 

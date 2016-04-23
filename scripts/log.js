@@ -1,5 +1,5 @@
 var Winston=require('../node_modules/Winston');
-
+var homeDir=process.env.OPENSHIFT_DATA_DIR ? process.env.OPENSHIFT_DATA_DIR+"/":"";
 const LOG = {
 	LEVELS: {
 		"trade":0,
@@ -30,14 +30,14 @@ var logger = new Winston.Logger({
 				name: 'log',
                 level: 'info', 
                 timestamp: true, 
-                filename: 'logs/bot.log', 
+                filename: homeDir+'logs/bot.log', 
                 json: false
             }),
 			new (Winston.transports.File)({
 				name: 'tradeLog',
                 level: 'trade', 
                 timestamp: true, 
-                filename: 'logs/trade.log', 
+                filename: homeDir+'logs/trade.log', 
                 json: false
             })
         ]

@@ -28,6 +28,11 @@ var secrets = {
 	"identity_secret":"***REMOVED***"
 };
 
+// ------------------------------ Settings ------------------------------
+var config=JSON.parse(fs.readFileSync("config.json"));
+var homeDir=process.env.OPENSHIFT_DATA_DIR ? process.env.OPENSHIFT_DATA_DIR+"/":"";
+
+
 //setup the logon options
 var logOnOptions = {
 	"accountName": "***REMOVED***",
@@ -71,9 +76,9 @@ community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 
 // ------------------------------ Read Database ------------------------------
 
-var buyDB=JSON.parse(fs.readFileSync("database/buy.json"));
-var sellDB=JSON.parse(fs.readFileSync("database/sell.json"));
-var config=JSON.parse(fs.readFileSync("config.json"));
+var buyDB=JSON.parse(fs.readFileSync(homeDir+"database/buy.json"));
+var sellDB=JSON.parse(fs.readFileSync(homeDir+"database/sell.json"));
+
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 utilities.updateDB(buyDB,sellDB,logger);
