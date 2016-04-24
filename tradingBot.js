@@ -41,13 +41,13 @@ var logOnOptions = {
 };
 
 //read steamguard file
-if (fs.existsSync('steamguard.txt')) {
-	logOnOptions.steamguard = fs.readFileSync('steamguard.txt').toString('utf8');
+if (fs.existsSync(homeDir+'steamguard.txt')) {
+	logOnOptions.steamguard = fs.readFileSync(homeDir+'steamguard.txt').toString('utf8');
 }
 
 //read polldata to prevent old offers from triggering event again
-if (fs.existsSync('data/polldata.json')) {
-	manager.pollData = JSON.parse(fs.readFileSync('polldata.json'));
+if (fs.existsSync(homeDir+'data/polldata.json')) {
+	manager.pollData = JSON.parse(fs.readFileSync(homeDir+'data/polldata.json'));
 }
 
 //login to the steamcommunity
@@ -56,7 +56,7 @@ community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 		logger.error("error occured "+err.message);
 		process.exit(1);
 	}
-	fs.writeFile('steamguard.txt', steamguard); 
+	fs.writeFile(homeDir+'data/steamguard.txt', steamguard); 
 
 	logger.info("Logged into Steam");
 	
@@ -178,5 +178,5 @@ manager.on('receivedOfferChanged', function(offer, oldState) {
 });
 
 manager.on('pollData', function(pollData) {
-	fs.writeFile('data/polldata.json', JSON.stringify(pollData));
+	fs.writeFile(homeDir+'data/polldata.json', JSON.stringify(pollData));
 });
