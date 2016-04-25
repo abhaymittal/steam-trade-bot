@@ -31,7 +31,7 @@ var secrets = {
 // ------------------------------ Settings ------------------------------
 var config=JSON.parse(fs.readFileSync("config.json"));
 var homeDir=process.env.OPENSHIFT_DATA_DIR ? process.env.OPENSHIFT_DATA_DIR+"/":"";
-
+var connectRetry=5;
 
 //setup the logon options
 var logOnOptions = {
@@ -51,28 +51,34 @@ if (fs.existsSync(homeDir+'data/polldata.json')) {
 }
 
 //login to the steamcommunity
-community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
-	if(err) {
-		logger.error("error occured "+err.message);
-		process.exit(1);
-	}
-	fs.writeFile(homeDir+'data/steamguard.txt', steamguard); 
-
-	logger.info("Logged into Steam");
-	
-	//use steamcommunity cookies for tradeoffer-manager
-	manager.setCookies(cookies, function(err) {
-		if (err) {
-			logger.error(err);
-			process.exit(1); 
-			return;
+function logIn() {
+	community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
+		if(err) {
+			logger.error("error occured "+err.message);
+			process.exit(1);
 		}
+		fs.writeFile(homeDir+'data/steamguard.txt', steamguard); 
 
-		logger.info("Got API key: " + manager.apiKey);
+		logger.info("Logged into Steam");
+		connectRetry=5;
+		
+		//use steamcommunity cookies for tradeoffer-manager
+		manager.setCookies(cookies, function(err) {
+			if (err) {
+				logger.error(err);
+				process.exit(1); 
+				return;
+			}
+
+			logger.info("Got API key: " + manager.apiKey);
+		});
+		
+		community.chatLogon(); //Log on to the chat so that bot appears online
+		community.startConfirmationChecker(10000,secrets.identity_secret); //poll every 10 seconds and confirm
 	});
-	
-	community.startConfirmationChecker(10000,secrets.identity_secret); //poll every 10 seconds and confirm
-});
+};
+
+logIn();
 
 // ------------------------------ Read Database ------------------------------
 
@@ -179,4 +185,37 @@ manager.on('receivedOfferChanged', function(offer, oldState) {
 
 manager.on('pollData', function(pollData) {
 	fs.writeFile(homeDir+'data/polldata.json', JSON.stringify(pollData));
+});
+
+
+// ------------------------------ Handle web session ------------------------------
+
+community.on('SessionExpired', function(err) {
+	community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
+		if(err) {
+			connectRetry-=1;
+			if(connectRetry==0) {
+				connectRetry=5;
+				setTimeout(function(){logIn();},1000*60*30); // try again after 30 minutes
+			}
+		}
+		fs.writeFile(homeDir+'data/steamguard.txt', steamguard); 
+
+		logger.info("Logged into Steam");
+		connectRetry=5;
+		
+		//use steamcommunity cookies for tradeoffer-manager
+		manager.setCookies(cookies, function(err) {
+			if (err) {
+				logger.error(err);
+				process.exit(1); 
+				return;
+			}
+
+			logger.info("Got API key: " + manager.apiKey);
+		});
+		
+		community.chatLogon(); //Log on to the chat so that bot appears online
+		community.startConfirmationChecker(10000,secrets.identity_secret); //poll every 10 seconds and confirm
+});
 });
