@@ -88,7 +88,7 @@ var sellDB=JSON.parse(fs.readFileSync(homeDir+"database/sell.json"));
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 utilities.updateDB(buyDB,sellDB,logger);
-setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*5); //update DB every hour
+setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*30); //update DB every half hour
 
 // ------------------------------ Trade Events ------------------------------
 
@@ -154,6 +154,7 @@ manager.on('newOffer', function(offer) {
 						//decrease number of item in buy and sell list
 						utilities.decrementBuyStock(offer.itemsToReceive,buyDB,config.keyList);
 						utilities.decrementSellStock(offer.itemsToGive,sellDB,config.keyList);
+						utilities.updateDB(buyDB,sellDB,logger); //update DB
 					}
 				});
 			}
