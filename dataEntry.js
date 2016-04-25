@@ -58,7 +58,9 @@ if(doSell==1) {
 			craftStatus="Craftable";
 		else
 			craftStatus="Non-Craftable"
-		paint=rlSync.question("Enter the name of the paint: ");
+		paint=rlSync.question("Enter the name of the paint(Enter if no paint): ");
+		if(paint==="")
+			paint="No Paint";
 		metal=rlSync.question("Enter the metal price: ");
 		metal=Math.round(parseFloat(metal)*100.0)/100.0;
 		keys=rlSync.question("Enter the key price: ");
