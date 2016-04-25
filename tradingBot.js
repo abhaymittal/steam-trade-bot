@@ -191,7 +191,7 @@ manager.on('pollData', function(pollData) {
 
 // ------------------------------ Handle web session ------------------------------
 
-community.on('SessionExpired', function(err) {
+community.on('sessionExpired', function(err) {
 	community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 		if(err) {
 			connectRetry-=1;
