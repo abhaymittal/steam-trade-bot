@@ -79,7 +79,8 @@ function logIn() {
 };
 
 logIn();
-
+// ---------- Log in to chat every 4 hours -----------
+setInterval(function(){community.chatLogon();},1000*60*60*4);
 // ------------------------------ Read Database ------------------------------
 
 var buyDB=JSON.parse(fs.readFileSync(homeDir+"database/buy.json"));
@@ -89,7 +90,6 @@ var sellDB=JSON.parse(fs.readFileSync(homeDir+"database/sell.json"));
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 utilities.updateDB(buyDB,sellDB,logger);
 setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*30); //update DB every half hour
-
 // ------------------------------ Trade Events ------------------------------
 
 manager.on('newOffer', function(offer) {
