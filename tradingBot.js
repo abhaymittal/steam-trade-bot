@@ -218,5 +218,9 @@ community.on('sessionExpired', function(err) {
 		
 		community.chatLogon(); //Log on to the chat so that bot appears online
 		community.startConfirmationChecker(10000,secrets.identity_secret); //poll every 10 seconds and confirm
+	});
 });
+
+community.on('chatLoggedOff',function() {
+	community.chatLogon();
 });
