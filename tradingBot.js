@@ -143,7 +143,8 @@ manager.on('newOffer', function(offer) {
 			}
 			logger.info("The price of items to sell: "+sp.metal+ " metal and " +sp.keys+" Keys");
 			//If bp >= sp, accept the trade
-			if((bp.keys>sp.keys)||((bp.keys==sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100)))) {
+			//if(((bp.keys>sp.keys)&&(bp.metal>=sp.metal))||((bp.keys==sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100)))) {
+			if((bp.keys>=sp.keys)&&(Math.round(bp.metal*100)>=Math.round(sp.metal*100))) {
 				logger.info("Accepting offer");
 				offer.accept(function(err) {
 					if(err)
