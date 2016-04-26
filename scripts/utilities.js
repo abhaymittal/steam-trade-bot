@@ -211,7 +211,7 @@ function updateDB(buyDB,sellDB,logger) {
 		logger.info("New buy entry found");
 		newBuy=JSON.parse(fs.readFileSync(homeDir+"database/newBuy.json"));
 	}
-	if(fs.existsSync("database/newSell.json")) {
+	if(fs.existsSync(homeDir+"database/newSell.json")) {
 		logger.info("New sell entry found");
 		newSell=JSON.parse(fs.readFileSync(homeDir+"database/newSell.json"));
 	}
