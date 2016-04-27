@@ -14,6 +14,7 @@ var fs=require('fs');
 var community=new SteamCommunity();	
 var utilities=require('./scripts/utilities');
 var logger=require('./scripts/log');
+var backpacktf=require('./scripts/backpacktf');
 
 
 
@@ -90,6 +91,13 @@ var sellDB=JSON.parse(fs.readFileSync(homeDir+"database/sell.json"));
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 utilities.updateDB(buyDB,sellDB,logger);
 setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*30); //update DB every half hour
+
+
+// ------------------------------ Backpack tf heartbeat ------------------------------
+
+backpacktf.heartbeat(config.steamid,config.bptfToken,logger);
+setInterval(function(){backpacktf.heartbeat(config.steamid,config.bptfToken,logger);},1000*60*5); //send heartbeats every 5 minutes
+
 // ------------------------------ Trade Events ------------------------------
 
 manager.on('newOffer', function(offer) {
