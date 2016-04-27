@@ -95,8 +95,8 @@ setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*30); //
 
 // ------------------------------ Backpack tf heartbeat ------------------------------
 
-//backpacktf.heartbeat(config.steamid,config.bptfToken,logger);
-//setInterval(function(){backpacktf.heartbeat(config.steamid,config.bptfToken,logger);},1000*60*5); //send heartbeats every 5 minutes
+backpacktf.heartbeat(config.steamid,config.bptfToken,logger);
+setInterval(function(){backpacktf.heartbeat(config.steamid,config.bptfToken,logger);},1000*60*5); //send heartbeats every 5 minutes
 
 // ------------------------------ Trade Events ------------------------------
 
