@@ -1,0 +1,21 @@
+{
+  "name": "steam-trade-bot",
+  "version": "1.0.1",
+  "description": "Steam trading bot",
+  "private": true,
+  "main": "tradingBot.js",
+  "scripts": {
+    "start": "node tradingBot.js"
+  },
+  "author": "Abhay Mittal <mittalabhay94@gmail.com>",
+  "license": "ISC",
+  "dependencies" :
+  { 
+	"readline-sync":  "^1.4.1",
+	"request": "^2.72.0",
+	"steam-totp": "^1.3.0",
+	"steam-tradeoffer-manager": "^1.22.2",
+	"steamcommunity": "^3.19.6",
+	"winston": "^2.2.0"
+  }
+}
