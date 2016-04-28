@@ -80,8 +80,8 @@ function logIn() {
 };
 
 logIn();
-// ---------- Log in to chat every 4 hours -----------
-setInterval(function(){community.chatLogon();},1000*60*60*4);
+// ---------- Log in to chat every 30 min -----------
+setInterval(function(){community.chatLogon();},1000*60*30);
 // ------------------------------ Read Database ------------------------------
 
 var buyDB=JSON.parse(fs.readFileSync(homeDir+"database/buy.json"));
