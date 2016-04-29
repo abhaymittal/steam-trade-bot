@@ -187,7 +187,7 @@ manager.on('receivedOfferChanged', function(offer, oldState) {
 					return item.name;
 				});
 
-				logger.info("Received: " + names.join(', '));
+				logger.trade("Received: " + names.join(', '));
 			}
 		});
 	}
@@ -206,7 +206,7 @@ community.on('sessionExpired', function(err) {
 			connectRetry-=1;
 			if(connectRetry==0) {
 				connectRetry=5;
-				setTimeout(function(){logIn();},1000*60*30); // try again after 30 minutes
+				setTimeout(function(){logger.info("Couldn't reach server, will log in after 30 min");logIn();},1000*60*30); // try again after 30 minutes
 			}
 		}
 		fs.writeFile(homeDir+'data/steamguard.txt', steamguard); 
