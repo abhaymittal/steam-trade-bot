@@ -15,7 +15,7 @@ var community=new SteamCommunity();
 var utilities=require('./scripts/utilities');
 var logger=require('./scripts/log');
 var backpacktf=require('./scripts/backpacktf');
-var Hapi=require('../node_modules/hapi');
+var Hapi=require('hapi');
 
 
 // ------------------------------ Basic login setup ------------------------------
@@ -88,8 +88,13 @@ var sellDB=JSON.parse(fs.readFileSync(homeDir+"database/sell.json"));
 
 // ------------------------------ Setup Hapi Server -------------------------------------------------
 const server=new Hapi.Server();
+var serverPort = process.env.OPENSHIFT_NODEJS_PORT?process.env.OPENSHIFT_NODEJS_PORT:"3000";
+var serverIP = process.env.OPENSHIFT_NODEJS_IP ? process.env.OPENSHIFT_NODEJS_IP: "127.0.0.1";
 
-server.connection({ port: 3000 });
+server.connection({ 
+	"host":serverIP,
+	"port": serverPort
+});
 
 server.route({
     method: 'GET',
@@ -108,6 +113,13 @@ server.route({
     }
 });
 
+server.start((err) => {
+
+    if (err) {
+        throw err;
+    }
+    logger.info('Server running at:', server.info.uri);
+});*/
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
 utilities.updateDB(buyDB,sellDB,logger);
