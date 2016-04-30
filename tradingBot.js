@@ -15,7 +15,7 @@ var community=new SteamCommunity();
 var utilities=require('./scripts/utilities');
 var logger=require('./scripts/log');
 var backpacktf=require('./scripts/backpacktf');
-
+var Hapi=require('../node_modules/hapi');
 
 
 // ------------------------------ Basic login setup ------------------------------
@@ -85,6 +85,28 @@ setInterval(function(){community.chatLogon();},1000*60*30);
 
 var buyDB=JSON.parse(fs.readFileSync(homeDir+"database/buy.json"));
 var sellDB=JSON.parse(fs.readFileSync(homeDir+"database/sell.json"));
+
+// ------------------------------ Setup Hapi Server -------------------------------------------------
+const server=new Hapi.Server();
+
+server.connection({ port: 3000 });
+
+server.route({
+    method: 'GET',
+    path: '/',
+    handler: function (request, reply) {
+        reply('Pinged');
+    }
+});
+
+server.route({
+    method: ['POST'],
+    path: '/newbuy',
+    handler: function (request, reply) {
+		logger.info(request.payload);
+        reply('I did something!');
+    }
+});
 
 
 // ------------------------------ Store Updated DB and add new entries ------------------------------
