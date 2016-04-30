@@ -68,7 +68,6 @@ function logIn() {
 			if (err) {
 				logger.error(err);
 				process.exit(1); 
-				return;
 			}
 
 			logger.info("Got API key: " + manager.apiKey);
@@ -101,13 +100,13 @@ setInterval(function(){backpacktf.heartbeat(config.steamid,config.bptfToken,logg
 // ------------------------------ Trade Events ------------------------------
 
 manager.on('newOffer', function(offer) {
-	logger.trade("New offer #" + offer.id + " from " + offer.partner.getSteamID64());
+	logger.trade("Offer #" + offer.id + ": by " + offer.partner.getSteamID64());
 	utilities.isUserBanned(offer.partner.getSteamID64(),logger,function (result) { //If user is banned, decline trade
 		if(result) { //User banned - decline trade
 			logger.info("User banned, declining");
 			offer.decline(function(err) {
 				if(err)
-					logger.error("Error occured while declining");
+					logger.error("Error occured while declining [user ban]");
 			});
 			return;
 		}
@@ -129,7 +128,7 @@ manager.on('newOffer', function(offer) {
 				logger.info("Declining trade as empty list");
 				offer.decline(function(err) {
 					if(err)
-						logger.error("Error occured while declining");
+						logger.error("Error occured while declining offer "+offer.id);
 				});
 				return;
 			}
@@ -176,7 +175,7 @@ manager.on('newOffer', function(offer) {
 });
 
 manager.on('receivedOfferChanged', function(offer, oldState) {
-	logger.trade("Offer #" + offer.id + " changed: " + TradeOfferManager.getStateName(oldState) + " -> " + TradeOfferManager.getStateName(offer.state));
+	logger.trade("Offer #" + offer.id + ": " + TradeOfferManager.getStateName(oldState) + " -> " + TradeOfferManager.getStateName(offer.state));
 
 	if (offer.state == TradeOfferManager.ETradeOfferState.Accepted) {
 		offer.getReceivedItems(function(err, items) {
@@ -187,7 +186,7 @@ manager.on('receivedOfferChanged', function(offer, oldState) {
 					return item.name;
 				});
 
-				logger.trade("Received: " + names.join(', '));
+				logger.trade("Offer #" + offer.id + ": Received: " + names.join(', '));
 			}
 		});
 	}
