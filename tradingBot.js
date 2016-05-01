@@ -104,14 +104,176 @@ server.route({
     }
 });
 
+//Two passwords to access the post requests
+var pass1="b0Tp4ss1";
+var pass2="P@$$w0rd@123"
+error404={"statusCode": 404,"error": "Not Found"};
+
+/**
+*	Route to append new buy entries to the existing buyDB
+*	Query Params:
+*		pw1: First password
+*		pw2: Second password
+*/
 server.route({
     method: ['POST'],
-    path: '/newbuy',
+    path: '/appendbuy',
     handler: function (request, reply) {
-		logger.info(request.payload);
-        reply('I did something!');
+		if((request.query.pw1===pass1)&&(request.query.pw2===pass2)) {
+			var newBuy=request.payload;
+			for(var prop in newBuy) {
+				buyDB[prop]=newBuy[prop];
+			}
+			utilities.saveBuyDB(buyDB);
+			logger.info("DB Update => Add buy stock");
+			reply('updated buy db');
+		}
+		else {
+			reply(error404);
+		}
     }
 });
+
+
+/**
+*	Route to append new sell entries to the existing sellDB
+*	Query Params:
+*		pw1: First password
+*		pw2: Second password
+*/
+server.route({
+    method: ['POST'],
+    path: '/appendsell',
+    handler: function (request, reply) {
+		if((request.query.pw1===pass1)&&(request.query.pw2===pass2)) {
+			var newSell=request.payload;
+			for(var prop in newSell) {
+				sellDB[prop]=newSell[prop];
+			}
+			utilities.saveSellDB(sellDB);
+			logger.info("DB Update => Add sell stock");
+			reply('updated sell db');
+		}
+		else {
+			reply(error404);
+		}
+    }
+});
+
+
+/**
+*	Route to remove buy entries from the existing buyDB
+*	Query Params:
+*		pw1: First password
+*		pw2: Second password
+*		level: The level of entry to delete. Following possible values
+*			0: Complete buyDB
+*			1: Particular item
+*			2: particular craft entry of an item (Craftable or Non-Craftable)
+*/
+server.route({
+    method: ['POST'],
+    path: '/removebuy', 
+    handler: function (request, reply) {
+		if((request.query.pw1===pass1)&&(request.query.pw2===pass2)) {
+			var level=request.query.level;
+			var removeDB=request.payload;
+			switch(parseInt(level)) {
+				case 0:
+					buyDB={};
+					break;
+				case 1:
+					for(var itemName in removeDB) {
+						console.log(itemName);
+						delete buyDB[itemName];
+					}
+					break;
+				case 2:
+					for(var itemName in removeDB) {
+						for(var craftStatus in removeDB[itemName])
+							delete buyDB[itemName][craftStatus];
+					}
+					break;
+				default:
+					reply(error404);
+					return;
+			}
+			utilities.saveBuyDB(buyDB);
+			logger.info("DB Update => Remove buy entries | level = "+request.query.level);
+			logger.info("Payload => "+JSON.stringify(request.payload));
+			reply('Removed buy entries');
+		}
+		else {
+			reply(error404);
+		}
+    }
+});
+
+
+
+
+/**
+*	Route to remove sell entries from the existing sellDB
+*	Query Params:
+*		pw1: First password
+*		pw2: Second password
+*		level: The level of entry to delete. Following possible values
+*			0: Complete buyDB
+*			1: Particular item
+*			2: particular craft entry of an item (Craftable or Non-Craftable)
+*			3: particular paint in some craft entry of an item
+*/
+server.route({
+    method: ['POST'],
+    path: '/removesell', 
+    handler: function (request, reply) {
+		if((request.query.pw1===pass1)&&(request.query.pw2===pass2)) {
+			var level=request.query.level;
+			var removeDB=request.payload;
+			switch(parseInt(level)) {
+				case 0:
+					sellDB={};
+					break;
+				case 1:
+					for(var itemName in removeDB) {
+						console.log(itemName);
+						delete sellDB[itemName];
+					}
+					break;
+				case 2:
+					for(var itemName in removeDB) {
+						for(var craftStatus in removeDB[itemName])
+							delete sellDB[itemName][craftStatus];
+					}
+					break;
+				case 3:
+					for(var itemName in removeDB) {
+						for(var craftStatus in removeDB[itemName]) {
+							for (var paint in removeDB[itemName][craftStatus])
+								delete sellDB[itemName][craftStatus][paint];
+						}		
+					}
+					break;
+				default:
+					reply(error404);
+					return;
+			}
+			utilities.saveSellDB(sellDB);
+			logger.info("DB Update => Remove sell entries | level = "+request.query.level);
+			logger.info("Payload => "+JSON.stringify(request.payload));
+			reply('Removed sell entries');
+		}
+		else {
+			reply(error404);
+		}
+    }
+});
+
+
+
+
+
+
 
 server.start((err) => {
 
@@ -119,11 +281,8 @@ server.start((err) => {
         throw err;
     }
     logger.info('Server running at:', server.info.uri);
-});*/
+});
 
-// ------------------------------ Store Updated DB and add new entries ------------------------------
-utilities.updateDB(buyDB,sellDB,logger);
-setInterval(function(){utilities.updateDB(buyDB,sellDB,logger);},1000*60*30); //update DB every half hour
 
 
 // ------------------------------ Backpack tf heartbeat ------------------------------
@@ -196,7 +355,9 @@ manager.on('newOffer', function(offer) {
 						//decrease number of item in buy and sell list
 						utilities.decrementBuyStock(offer.itemsToReceive,buyDB,config.keyList);
 						utilities.decrementSellStock(offer.itemsToGive,sellDB,config.keyList);
-						utilities.updateDB(buyDB,sellDB,logger); //update DB
+						utilities.saveBuyDB(buyDB);
+						utilities.saveSellDB(sellDB);
+						logger.info("DB Update => Updated both buy and sell DB");
 					}
 				});
 			}
