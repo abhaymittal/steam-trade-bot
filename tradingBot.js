@@ -103,7 +103,27 @@ server.route({
         reply('Pinged');
     }
 });
+/**
+*	Route to list buyDB
+*/
+server.route({
+    method: 'GET',
+    path: '/buy',
+    handler: function (request, reply) {
+        reply(JSON.stringify(buyDB));
+    }
+});
 
+/**
+*	Route to list sellDB
+*/
+server.route({
+    method: 'GET',
+    path: '/sell',
+    handler: function (request, reply) {
+        reply(JSON.stringify(sellDB));
+    }
+});
 //Two passwords to access the post requests
 var pass1="b0Tp4ss1";
 var pass2="P@$$w0rd@123"
