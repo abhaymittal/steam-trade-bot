@@ -202,36 +202,20 @@ function sellingPrice(itemList,sellDB,keyList,logger) {
 	return price;
 };
 
-
-function updateDB(buyDB,sellDB,logger) {
-	var newBuy=null;
-	var newSell=null;
-	logger.info("Updating DB");
-	if(fs.existsSync(homeDir+"database/newBuy.json")) {
-		logger.info("New buy entry found");
-		newBuy=JSON.parse(fs.readFileSync(homeDir+"database/newBuy.json"));
-	}
-	if(fs.existsSync(homeDir+"database/newSell.json")) {
-		logger.info("New sell entry found");
-		newSell=JSON.parse(fs.readFileSync(homeDir+"database/newSell.json"));
-	}
-	for(var prop in newBuy) {
-		buyDB[prop]=newBuy[prop];
-	}
-	for(var prop in newSell) {
-		sellDB[prop]=newSell[prop];
-	}
-	if(fs.existsSync(homeDir+"database/newBuy.json")) {
-		fs.unlinkSync(homeDir+"database/newBuy.json");
-	}
-	if(fs.existsSync(homeDir+"database/newSell.json")) {
-		fs.unlinkSync(homeDir+"database/newSell.json");
-	}
-
+/**
+* Function to save buyDB
+*/
+function saveBuyDB(buyDB) {
 	fs.writeFile(homeDir+"database/buy.json",JSON.stringify(buyDB));
-	fs.writeFile(homeDir+"database/sell.json",JSON.stringify(sellDB));
-	logger.info
 }
+
+/**
+* Function to save sellDB
+*/
+function saveSellDB(sellDB) {
+	fs.writeFile(homeDir+"database/sell.json",JSON.stringify(sellDB));
+}
+
 
 /**
 *	Function to decrement the quantity of item from buyDB
@@ -306,7 +290,8 @@ module.exports = {
 	isUserBanned,
 	buyingPrice,
 	sellingPrice,
-	updateDB,
+	saveBuyDB,
+	saveSellDB,
 	decrementBuyStock,
 	decrementSellStock,
 	isEscrowHeld
