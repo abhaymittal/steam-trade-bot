@@ -37,7 +37,10 @@ if(doBuy==1) {
 		newBuy[name][craftStatus].qty=qty;
 	}
 
-	fs.writeFile("database/newBuy.json",JSON.stringify(newBuy));
+	//fs.writeFile("database/newBuy.json",JSON.stringify(newBuy));
+	console.log("======================================================================");
+	console.log(JSON.stringify(newBuy));
+	console.log("======================================================================");
 }
 
 
@@ -75,5 +78,8 @@ if(doSell==1) {
 		newSell[name][craftStatus][paint].qty=qty;
 	}
 
-	fs.writeFile("database/newSell.json",JSON.stringify(newSell));
+	//fs.writeFile("database/newSell.json",JSON.stringify(newSell));
+	console.log("======================================================================");
+	console.log(JSON.stringify(newSell));
+	console.log("======================================================================");
 }
