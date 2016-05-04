@@ -378,6 +378,14 @@ manager.on('newOffer', function(offer) {
 						utilities.saveSellDB(sellDB);
 						logger.info("DB Update => Updated both buy and sell DB");
 						logger.info("Offer "+offer.id+": Got "+bp.keys+" keys and "+bp.metal+" metal for "+sp.keys+" keys and "+sp.metal+" metal");
+						var names = offer.itemsToReceive.map(function(item) {
+							return item.name;
+						});
+						logger.trade("Offer " + offer.id + ": Received: " + names.join(', '));
+						var names = offer.itemsToGive.map(function(item) {
+							return item.name;
+						});
+						logger.trade("Offer " + offer.id + ": Sold: " + names.join(', '));
 					}
 				});
 			}
@@ -391,20 +399,6 @@ manager.on('newOffer', function(offer) {
 
 manager.on('receivedOfferChanged', function(offer, oldState) {
 	logger.trade("Offer " + offer.id + ": " + TradeOfferManager.getStateName(oldState) + " -> " + TradeOfferManager.getStateName(offer.state));
-
-	if (offer.state == TradeOfferManager.ETradeOfferState.Accepted) {
-		offer.getReceivedItems(function(err, items) {
-			if (err) {
-				logger.error("Couldn't get received items: " + err);
-			} else {
-				var names = items.map(function(item) {
-					return item.name;
-				});
-
-				logger.trade("Offer " + offer.id + ": Received: " + names.join(', '));
-			}
-		});
-	}
 });
 
 manager.on('pollData', function(pollData) {
@@ -422,6 +416,7 @@ community.on('sessionExpired', function(err) {
 				connectRetry=5;
 				setTimeout(function(){logger.info("Couldn't reach server, will log in after 30 min");logIn();},1000*60*30); // try again after 30 minutes
 			}
+			return;
 		}
 		fs.writeFile(homeDir+'data/steamguard.txt', steamguard); 
 
