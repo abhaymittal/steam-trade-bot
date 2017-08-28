@@ -26,8 +26,8 @@ var manager = new TradeOfferManager({
 	"pollInterval": 5000 //5 second poll
 });
 var secrets = {
-	"shared_secret":"***REMOVED***",
-	"identity_secret":"***REMOVED***"
+	"shared_secret":"REMOVED",
+	"identity_secret":"REMOVED"
 };
 
 // ------------------------------ Settings ------------------------------
@@ -37,8 +37,8 @@ var connectRetry=5;
 
 //setup the logon options
 var logOnOptions = {
-	"accountName": "***REMOVED***",
-	"password": "***REMOVED***",
+	"accountName": "REMOVED",
+	"password": "REMOVED",
 	"twoFactorCode": SteamTotp.getAuthCode(secrets.shared_secret)
 };
 

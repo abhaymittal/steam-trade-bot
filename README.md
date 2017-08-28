@@ -1,5 +1,4 @@
 # Steam trading bot
 ## Author: Abhay Mittal
 
-Suggestions
-I would suggest you to move your get/post to seperate module . In this way there can be logical seperation between your steam interating entities and data handling entities. These 2 should be as far from each other as possible.
+Trading bot for Team Fortress 2. I ran this bot for less than a month in 2015 and it did over 900 trades.
