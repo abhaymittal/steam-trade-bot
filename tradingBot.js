@@ -8,6 +8,7 @@
 *	
 */
 var SteamCommunity=require('steamcommunity');
+var SteamUser=require('steam-user');
 var SteamTotp = require('steam-totp');
 var TradeOfferManager = require('steam-tradeoffer-manager');
 var fs=require('fs');
@@ -52,7 +53,7 @@ if (fs.existsSync(homeDir+'data/polldata.json')) {
 }
 
 //login to the steamcommunity
-function logIn() {
+function logInCommunity() {
 	community.login(logOnOptions,function(err,sessionID,cookies,steamguard) {
 		if(err) {
 			logger.error("error occured "+err.message);
@@ -78,6 +79,9 @@ function logIn() {
 	});
 };
 
+function logIn() {
+	
+}
 logIn();
 // ---------- Log in to chat every 30 min -----------
 setInterval(function(){community.chatLogon();},1000*60*30);

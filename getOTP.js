@@ -3,7 +3,7 @@ var SteamTotp = require('steam-totp');
 
 var responseObject;
 
-if(fs.existsSync("data\\***REMOVED***.2fa")) {
+if(fs.existsSync("data/***REMOVED***.2fa")) {
 	responseObject = JSON.parse(fs.readFileSync('data/***REMOVED***.2fa'));
 }
 
